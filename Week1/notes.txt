@@ -1,0 +1,6 @@
+# Getting and Cleaning Data
+
+tokenization, profanity filtering
+
+take text and split into words, and consider:
+    punctuations, digits, capitaliation, roots, parts of speech

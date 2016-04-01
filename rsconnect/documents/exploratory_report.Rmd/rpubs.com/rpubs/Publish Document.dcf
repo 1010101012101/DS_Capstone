@@ -1,0 +1,7 @@
+name: Publish Document
+account: rpubs
+server: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/163287/483589f3638f4591a15fcec6ea640137
+bundleId: https://api.rpubs.com/api/v1/document/163287/483589f3638f4591a15fcec6ea640137
+url: http://rpubs.com/chavli/163287
+when: 1458533803.95427

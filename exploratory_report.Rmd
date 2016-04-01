@@ -1,0 +1,278 @@
+---
+title: 'SwiftKey: Exploratory Analysis'
+subtitle: "Sentiment Analysis Feasibility"
+author: "Cha Li"
+date: "March 20, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=F, message=F}
+require(tm)
+require(ngram)
+require(NLP)
+require(ggplot2)
+require(dplyr)
+require(tidyr)
+library(gridExtra)
+
+loadRawCorpus <- function(path, n, random=T, seed=NA){
+    # if random = False then just select the first n files
+
+    path = file.path(path)
+    source <- DirSource(path)
+    source$length <- n
+    if(random){
+        if(!is.na(seed)) {
+            set.seed(seed)
+        }
+        source$filelist <- sample(source$filelist, n)
+    }
+    else {
+        source$filelist <- source$filelist[1:n]
+    }
+    corpus <- Corpus(source)
+    return(corpus)
+}
+
+sanitizeCorpus <- function(corpus, keepPunctuation=F, keepStopWords=F) {
+    corpus <- tm_map(corpus, tolower)
+    corpus <- tm_map(corpus, removeNumbers)
+    if(!keepPunctuation){
+        corpus <- tm_map(corpus, removePunctuation)
+    }
+    if(!keepStopWords){
+        corpus <- tm_map(corpus, removeWords, stopwords("english"))
+    }
+    corpus <- tm_map(corpus, stripWhitespace)
+    corpus <- tm_map(corpus, PlainTextDocument)
+    return(corpus)
+}
+
+globalTermFrequency <- function(corpus){
+    # dtm - a document-term matrix representing a corpus to analyze
+    # returns: a sorted term-frequency (decreasing) list
+    dtm = DocumentTermMatrix(corpus)
+    global_tf <- colSums(as.matrix(dtm))
+    idx <- order(global_tf, decreasing=T)
+    return(global_tf[idx])
+}
+```
+
+## Introduction
+Natural language is a very complex product of our intelligence and culture. When put into text it 
+can be an especially difficult data type to work with. Context, slang, shorthand, metaphors,
+innuendos, and the purposeful disregard of grammatical rules are only a few of the details that
+make it very difficult for a computer to interpret and understand. Natural Language Processing (NLP)
+is the field focused on teaching computers to understand.
+
+In this report, I'll introduce the datasets (corpora), cover a few preprocessing techniques to 
+normalize natural language, show the results of exploratory work, and discuss future work and
+ideas for the final project.
+
+
+## The Datasets
+We were provided with various datasets, in different languages, for this project. My work is 
+focused on the three English datasets: U.S News, U.S Blogs, and U.S. Tweets. These datasets are 205MB,
+210MB, and 167MB, respectively. I assume every line of text data is independent of other lines; 
+this makes it easier to process the data efficiently.
+
+
+### Sampling
+The first thing I did before working with the data was to split the news, blog, and twitter corpora into
+multiple smaller files containing 1,000 lines each. This was done from the Unix command line with:
+```
+split -a 3 -d -l 1000 <original file> <new_file_prefix>
+```
+This created 1011, 900, and 2361 smaller files respectively. Sampling was done by loading a subset of files
+rather than a subset of lines. 
+```{r}
+# load n random 1000-line files from each dataset
+blog_corpus <-loadRawCorpus("~/Coursera/DataScience/Capstone/data/en_US/us-blogs", random=T, n=50, seed=12345)
+twitter_corpus <-loadRawCorpus("~/Coursera/DataScience/Capstone/data/en_US/us-twitter", random=T, n=50, seed=12345)
+news_corpus <-loadRawCorpus("~/Coursera/DataScience/Capstone/data/en_US/us-news", random=T, n=50, seed=12345)
+```
+
+## Text Preprocessing
+Text data is very messy and there are few grammar rules which we can ignore to make text processing easier. 
+For example, capitalization, repeated whitespace, some punctuation, meaningless words (the, is, to, etc.),
+ and numbers don't add much meaning but do add a lot of noise. Other artifacts of language, such as
+ prefixes, suffixes, and tense aren't removed at this stage. I'll discuss stemming and lemmatization 
+ at a later point.
+
+
+## Word Frequency and N-Gram Distributions
+Counting words is pretty straigtforward since they're indepedent entities that don't require any
+additional work beyond the things listed previously. The following plots show the top 20 most frequent
+words from each corpus.
+
+```{r}
+wc_blog_corpus <- sanitizeCorpus(blog_corpus, keepPunctuation = F, keepStopWords = F)
+wc_twitter_corpus <- sanitizeCorpus(twitter_corpus, keepPunctuation = F, keepStopWords = F)
+wc_news_corpus <- sanitizeCorpus(news_corpus, keepPunctuation = F, keepStopWords = F)
+```
+```{r echo=F, message=F, fig.width=10}
+working_corpus <- wc_blog_corpus
+global_tf <- globalTermFrequency(working_corpus)
+df <- data.frame(word=as.factor(names(global_tf)), occurrences=as.numeric(unname(global_tf)))
+df <- transform(df, word = reorder(word, order(occurrences, decreasing=T)))
+
+blog_plot <- ggplot() +
+    geom_bar(data=df[1:20, ], aes(x=word, y=occurrences), fill="goldenrod1", stat='identity') +
+    labs(title="Top 20 Frequent Words\nSample Blog Corpus") +
+    theme(axis.text.x = element_text(angle = 60, hjust = 1), legend.position="none")
+    
+
+working_corpus <- wc_news_corpus
+global_tf <- globalTermFrequency(working_corpus)
+df <- data.frame(word=as.factor(names(global_tf)), occurrences=as.numeric(unname(global_tf)))
+df <- transform(df, word = reorder(word, order(occurrences, decreasing=T)))
+
+news_plot <- ggplot() +
+    geom_bar(data=df[1:20, ], aes(x=word, y=occurrences), fill="firebrick2", stat='identity') +
+    labs(title="Top 20 Frequent Words\nSample News Corpus") +
+    theme(axis.text.x = element_text(angle = 60, hjust = 1), legend.position="none")
+  
+
+working_corpus <- wc_twitter_corpus
+global_tf <- globalTermFrequency(working_corpus)
+df <- data.frame(word=as.factor(names(global_tf)), occurrences=as.numeric(unname(global_tf)))
+df <- transform(df, word = reorder(word, order(occurrences, decreasing=T)))
+
+twitter_plot <- ggplot() +
+    geom_bar(data=df[1:20, ], aes(x=word, y=occurrences), fill="deepskyblue", stat='identity') +
+    labs(title="Top 20 Frequent Words\nSample Twitter Corpus") +
+    theme(axis.text.x = element_text(angle = 60, hjust = 1), legend.position="none")
+  
+grid.arrange(news_plot, blog_plot, twitter_plot, ncol=3)
+```
+There are a few interesting differences between the datasets even at this basic level of analysis.
+First, the `News` corpus has the largest skew with the word "said" occuring almost as much as the next
+three words combined. One hypothesis might be that the news tends to quote people. Secondly, the `Twitter`
+corpus is the only one with an acronym in the top 20, "lol". Additionally, the `Twitter` corpus has the
+most "emotional" words in its top 20: "good", "love", "great", "lol", and "thanks". The other
+two sets don't have any words like this. 
+
+### N-Grams and Sentences
+An n-gram is a tuple of n consecutive words. Counting bigrams `(n = 2)` lets you see the
+most common pairs of words that show up together. Trigrams `(n = 3)` and so on are just longer 
+versions.
+
+Sentence structure matters when counting n-grams. A n-gram can't cross sentences 
+so additional parsing needs to be done. The `OpenNLP`, `NLP`, and `ngram` packages provide all the 
+necessary functions to parse sentences from a string. Only the `Twitter` and `News` corpora will be 
+shown in this part to keep things concise.
+
+```{r echo=F, message=F}
+globalNGramFrequency <- function(raw_corpus, ng=2, stopWords=F){
+    corpus <- sanitizeCorpus(raw_corpus, keepPunctuation = T, keepStopWords = stopWords)
+
+    corpus_ngrams <- lapply(corpus, function(document){
+        sent_token_annotator <- openNLP::Maxent_Sent_Token_Annotator()
+        word_token_annotator <- openNLP::Maxent_Word_Token_Annotator()
+
+        document_ngrams <- lapply(document$content, function(line){
+            sline <- trimws(as.String(line))
+            if(length(strsplit(sline, "\\s+", fixed = F)[[1]]) == 0){
+                return(vector())
+            }
+            sent_structure <- NLP::annotate(sline, list(sent_token_annotator, word_token_annotator))
+
+            sent_structure <- data.frame(sent_structure)
+            sentences <- sent_structure %>% dplyr::filter(type=="sentence") %>% select(start, end)
+
+            # 1 means apply function row-wise
+            ngrams <- apply(sentences, 1, function(bounds){
+                start <- bounds[1]
+                end <- bounds[2]
+                sub_s <- substr(line, start, end)
+                sub_s <- gsub("[[:punct:]]", "", sub_s)
+                sub_s <- trimws(sub_s)
+                if( length(strsplit(sub_s, "\\s+", fixed = F)[[1]]) >= ng) {
+                    ng_obj <- ngram::ngram(sub_s, n=ng)
+                    results <- ngram::get.ngrams(ng_obj)
+                }
+                else{
+                    results <- vector()
+                }
+                return(results)
+            })
+            return(unlist(ngrams))
+        })
+        return(unlist(document_ngrams))
+    })
+    all_ngrams <- unname(unlist(corpus_ngrams))
+    results <- table(all_ngrams)
+    results <- results[order(results, decreasing=T)]
+    df <- data.frame(ngram=names(results), occurrences=unname(results))
+    return(df)
+}
+```
+```{r ngram_counter, echo=F}
+twitter_bigrams <- globalNGramFrequency(twitter_corpus, ng=2)
+twitter_trigrams <- globalNGramFrequency(twitter_corpus, ng=3)
+news_bigrams <- globalNGramFrequency(news_corpus, ng=2)
+news_trigrams <- globalNGramFrequency(news_corpus, ng=3)
+```
+```{r ngram_formatter, echo=F, message=F}
+twitter_bigrams <- transform(twitter_bigrams, ngram = reorder(ngram, order(occurrences, decreasing=T))) 
+twitter_trigrams <- transform(twitter_trigrams, ngram = reorder(ngram, order(occurrences, decreasing=T)))
+news_bigrams <- transform(news_bigrams, ngram = reorder(ngram, order(occurrences, decreasing=T))) 
+news_trigrams <- transform(news_trigrams, ngram = reorder(ngram, order(occurrences, decreasing=T)))
+```
+
+```{r echo=F, message=F, fig.width=10}
+twitter_bigram_plot <- ggplot() +
+    geom_bar(data=twitter_bigrams[1:15, ], aes(x=ngram, y=occurrences), fill="deepskyblue", stat='identity') +
+    labs(title="Top 15 Bigrams\nSample Twitter Corpus") +
+    theme(axis.text.x = element_text(angle = 60, hjust = 1), legend.position="none")
+
+news_bigram_plot <- ggplot() +
+    geom_bar(data=news_bigrams[1:15, ], aes(x=ngram, y=occurrences), fill="firebrick2", stat='identity') +
+    labs(title="Top 15 Bigrams\nSample News Corpus") +
+    theme(axis.text.x = element_text(angle = 60, hjust = 1), legend.position="none")
+
+grid.arrange(news_bigram_plot, twitter_bigram_plot, ncol=2)
+```
+
+```{r echo=F, message=F, fig.width=10}
+twitter_trigram_plot <- ggplot() +
+    geom_bar(data=twitter_trigrams[1:15, ], aes(x=ngram, y=occurrences), fill="deepskyblue", stat='identity') +
+    labs(title="Top 15 Trigrams\nSample Twitter Corpus") +
+    theme(axis.text.x = element_text(angle = 60, hjust = 1), legend.position="none")
+
+news_trigram_plot <- ggplot() +
+    geom_bar(data=news_trigrams[1:15, ], aes(x=ngram, y=occurrences), fill="firebrick2", stat='identity') +
+    labs(title="Top 15 Trigrams\nSample News Corpus") +
+    theme(axis.text.x = element_text(angle = 60, hjust = 1), legend.position="none")
+
+grid.arrange(news_trigram_plot, twitter_trigram_plot, ncol=2)
+```
+Bigrams and trigrams give us a better idea about the _topics_ and _themes_ covered in a particular
+corpus (an important component of topic modelling). Lets first look at the differences between the 
+top 15 bigrams for the `News` and `Twitter` corpora. `News` has a lot terms referencing time and places
+whereas `Twitter`, again, has more emotional phrases. `Twitter` also has a couple phrases referencing
+time but they're on a much smaller scale. Moving onto trigrams we start to see more specific themes.
+We still see phrases referencing time in the news but now we start seeing specific topics such as 
+Barack Obama, New York, and Osama Bin Laden. Not surprisingly, the `Twitter` trigrams are dominated 
+by various greetings, especially "Happy Mother's Day". In general, `Twitter` trigrams are positive.
+
+
+## Additional Work and Project Directions
+The results of this analysis provides a look into the type of text data represented by
+each corpus. We saw that `Twitter` is largely dominated by greetings, positiveness, and emotion whereas 
+the `News` and `Blog` corpora have more "straight to the facts" type words and phrases. This distinction
+is very important when deciding what kind of NLP problem to approach. Something like a 
+"suggested words" or "auto-complete" model might want to pull from the more structured writing of
+News and Blogs whereas something like sentiment analysis is better off using the Twitter corpus.
+
+My final project will deal with more of the latter. Sentiment analysis is a pretty cool problem impacts 
+lots of things. Do people generally like you? Is your email too rude? How do people feel about your brand?
+
+Answering these questions will involve more language processing even before we get to the models.
+Some additional work I foresee happening include: parts-of-speech parsing, sentiment mapping, lemmatization,
+and giving weights to phrases based on how useful they are. I hope I have enough time and data for this...
+

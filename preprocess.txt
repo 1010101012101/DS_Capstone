@@ -1,0 +1,15 @@
+Assumptions:
+I. Every line of each file is an indepedent piece of text
+----
+
+1. split large files into smaller chunks of 1000 lines each
+split -a 3 -d -l 1000 en_US.blogs.txt us_blogs_
+split -a 4 -d -l 1000 en_US.news.txt us_news_
+split -a 3 -d -l 1000 en_US.twitter.txt us_twitter_
+
+
+
+2. good resource
+https://rstudio-pubs-static.s3.amazonaws.com/31867_8236987cf0a8444e962ccd2aec46d9c3.html
+
+pos tagging: http://blog.dpdearing.com/2011/12/opennlp-part-of-speech-pos-tags-penn-english-treebank/
