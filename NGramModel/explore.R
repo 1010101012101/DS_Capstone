@@ -1,4 +1,4 @@
-setwd("/home/cha/Coursera/DataScience/Capstone/NGramModel/")
+# setwd("/home/cha/Coursera/DataScience/Capstone/NGramModel/")
 library(tm)
 library(ngram)
 library(markovchain)
@@ -7,16 +7,16 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(stringr)
-source("../utils.R")
+source("utils.R")
 ngram_len = 3
 
 
 # load some data to play around with
-sample_corpus <-loadRawCorpus("~/Coursera/DataScience/Capstone/data/en_US/all-data/", random=T, n=1000, seed=12345)
+sample_corpus <-loadRawCorpus("data/en_US/all-data/", random=T, n=2000, seed=12345)
 
 # extract all n+1 grams so we can build mappings of (n-gram) -> next word
 start_t <- Sys.time()
-ngrams <-extractNGrams(sample_corpus, stopWords = T, ng=ngram_len+1)
+ngrams <-extractNGrams(sample_corpus, stopWords = T, ng=ngram_len+1, cores=15)
 end_t <- Sys.time() - start_t
 print(end_t)
 
@@ -27,7 +27,10 @@ g <- graph.data.frame(map_df, directed=T)
 end_t <- Sys.time() - start_t
 print(end_t)
 
-s = "would mean the"
+
+
+
+s = "miss u too"
 g[s][g[s] > 0]
 
 

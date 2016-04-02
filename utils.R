@@ -49,10 +49,11 @@ globalTermFrequency <- function(corpus){
 }
 
 
-extractNGrams <- function(raw_corpus, ng=2, stopWords=F){
+extractNGrams <- function(raw_corpus, ng=2, stopWords=F, cores=2){
+    print(paste("using cores: ", cores))
     corpus <- sanitizeCorpus(raw_corpus, keepPunctuation = T, keepStopWords = stopWords)
 
-    corpus_ngrams <- lapply(corpus, function(document){
+    corpus_ngrams <- parallel::mclapply(corpus, function(document){
         sent_token_annotator <- openNLP::Maxent_Sent_Token_Annotator()
         word_token_annotator <- openNLP::Maxent_Word_Token_Annotator()
 
@@ -85,7 +86,7 @@ extractNGrams <- function(raw_corpus, ng=2, stopWords=F){
             return(unlist(ngrams))
         })
         return(unlist(document_ngrams))
-    })
+    }, mc.cores=cores)
     all_ngrams <- unname(unlist(corpus_ngrams))
     return(all_ngrams)
 }
