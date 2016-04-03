@@ -5,6 +5,12 @@ require(ggplot2)
 require(dplyr)
 require(tidyr)
 
+strtail <- function(string, n){
+    # return the last n words of a string as a string
+    words <- strsplit(string, " ")[[1]]
+    return(paste(tail(words, n), collapse = " "))
+}
+
 ## define some useful functions
 loadRawCorpus <- function(path, n, random=T, seed=NA){
     # if random = False then just select the first n files

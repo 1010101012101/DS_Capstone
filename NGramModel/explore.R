@@ -1,4 +1,3 @@
-# setwd("/home/cha/Coursera/DataScience/Capstone/NGramModel/")
 library(tm)
 library(ngram)
 library(markovchain)
@@ -8,20 +7,30 @@ library(dplyr)
 library(tidyr)
 library(stringr)
 source("utils.R")
-ngram_len = 3
+source("kats-backoff.R")
+ngram_len = 1
 
+# leave one core open so the system doesn't die
+ncores = parallel::detectCores() - 1
 
 # load some data to play around with
-sample_corpus <-loadRawCorpus("data/en_US/all-data/", random=T, n=2000, seed=12345)
+sample_corpus <-loadRawCorpus("data/en_US/all-data/", random=T, n=5, seed=12345)
+katzmodel <- buildmodel(sample_corpus)
+
 
 # extract all n+1 grams so we can build mappings of (n-gram) -> next word
 start_t <- Sys.time()
-ngrams <-extractNGrams(sample_corpus, stopWords = T, ng=ngram_len+1, cores=15)
+ngrams <-extractNGrams(sample_corpus, stopWords = T, ng=ngram_len+1, cores=1)
 end_t <- Sys.time() - start_t
 print(end_t)
 
 df <- data.frame(str_split_fixed(ngrams, " ", n=ngram_len+1), stringsAsFactors = F)
-map_df <- data.frame(ngram=do.call(paste, df[, 1:ngram_len]), next_word=df[, ngram_len+1], stringsAsFactors = F)
+if(ngram_len > 1){
+    map_df <- data.frame(ngram=do.call(paste, df[, 1:ngram_len]), next_word=df[, ngram_len+1], stringsAsFactors = F)
+} else {
+    map_df <- df %>% rename(ngram=X1, nextword=X2)
+}
+
 start_t <- Sys.time()
 g <- graph.data.frame(map_df, directed=T)
 end_t <- Sys.time() - start_t

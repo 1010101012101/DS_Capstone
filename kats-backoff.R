@@ -1,0 +1,117 @@
+library(tm)
+library(ngram)
+library(markovchain)
+library(igraph)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(stringr)
+source("utils.R")
+
+pword <- function(model, word, string){
+    # return the probability of the given word and words leading up to it.
+    #
+    # model  -- the model object returned by build
+    # word   -- the word your curious about
+    # string -- a space delimited string with at most the same number of words as the highest order
+    #   markov chain in the model
+    #
+    # returns a probability [0-1]
+
+    for(order in seq(model$order, 1, -1)) {
+        phrase = strtail(string, order)
+        mchain = model$model[[order]]
+
+        tryCatch({
+            print(phrase)
+            ngram_node <- model$model[[order]][phrase]
+            if(is.na(ngram_node[word]) || ngram_node[word] == 0){
+                next
+            }
+
+        }, error = function(e){
+            # we need to backoff here. n-th order ngram returned nothing so move down to (n-1 gram)
+            next
+        })
+
+
+        # occurences of word given the phrase
+        count_word = ngram_node[word]
+
+        # occurence of the phrase
+        count_phrase = sum(ngram_node)
+
+        # discount coefficient
+        d = 1
+        if(count_word <= 5) {
+            d = ((count_word + 1) * sum(model$ngram_freq[[1]] == (count_word + 1))) /
+                ((count_word) * sum(model$ngram_freq[[1]] == (count_word)))
+        }
+
+        return(d * count_word / count_phrase)
+
+    }
+    return(0)
+}
+
+
+nextword <- function(model, string){
+    # return the word with the highest MLE given the input model and string
+    #
+    # model  -- the model object returned by build
+    # string -- a space delimited string with at most the same number of words as the highest order
+    #   markov chain in the model.
+    #
+    # returns a word
+    return(0)
+}
+
+
+allnextwords <- function(model, string){
+    # return all words with a non-zero probability of appearing after the given string
+    return
+}
+
+
+buildmodel <- function(corpus, highest_order=2, cores=1){
+    # build a text-prediction model based on the katz-backoff algorithm.
+    # corpus -- a Corpus object from the 'tm' package
+
+    chains = list()
+    ngram_counts = list()
+
+    for(order in seq(highest_order, 1, -1)){
+        print("finding ngrams...")
+        start_t <- Sys.time()
+
+        # parallelized AF
+        ngrams <-extractNGrams(sample_corpus, stopWords = T, ng=order+1, cores=cores)
+
+        delta_t <- Sys.time() - start_t
+        print(paste0(order,"-grams found in ", delta_t))
+
+        print("building markov chain...")
+        df <- data.frame(str_split_fixed(ngrams, " ", n=order+1), stringsAsFactors = F)
+
+        if(order > 1){
+            map_df <- data.frame(ngram=do.call(paste, df[, 1:order]), next_word=df[, order+1], stringsAsFactors = F)
+        } else {
+            map_df <- df %>% rename(ngram=X1, nextword=X2)
+        }
+
+        start_t <- Sys.time()
+        g <- graph.data.frame(map_df, directed=T)
+        delta_t <- Sys.time() - start_t
+        print(paste0("markov chain built in ", delta_t))
+
+        chains[[order]] <- g
+        ngram_counts[[order]] <- table(map_df$ngram)
+
+        print("--------------------------------------")
+    }
+
+    result = list(model=chains, ngram_freq=ngram_counts, corpus=corpus, order=highest_order)
+    return(result)
+}
+
+
