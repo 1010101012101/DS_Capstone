@@ -22,36 +22,37 @@ pword <- function(model, word, string){
         phrase = strtail(string, order)
         mchain = model$model[[order]]
 
-        tryCatch({
+        result <- tryCatch({
             print(phrase)
             ngram_node <- model$model[[order]][phrase]
             if(is.na(ngram_node[word]) || ngram_node[word] == 0){
-                next
+                ngram_node = NULL
             }
 
         }, error = function(e){
             # we need to backoff here. n-th order ngram returned nothing so move down to (n-1 gram)
-            next
+            NULL
         })
 
 
-        # occurences of word given the phrase
-        count_word = ngram_node[word]
+        if(!is.null(result)) {
+            # occurences of word given the phrase
+            count_word = result[word]
 
-        # occurence of the phrase
-        count_phrase = sum(ngram_node)
+            # occurence of the phrase
+            count_phrase = sum(result)
 
-        # discount coefficient
-        d = 1
-        if(count_word <= 5) {
-            d = ((count_word + 1) * sum(model$ngram_freq[[1]] == (count_word + 1))) /
-                ((count_word) * sum(model$ngram_freq[[1]] == (count_word)))
+            # discount coefficient
+            d = 1
+            if(count_word <= 5) {
+                d = ((count_word + 1) * sum(model$ngram_freq[[1]] == (count_word + 1))) /
+                    ((count_word) * sum(model$ngram_freq[[1]] == (count_word)))
+            }
+
+            return(d * count_word / count_phrase)
         }
-
-        return(d * count_word / count_phrase)
-
     }
-    return(0)
+    return(-1)
 }
 
 
@@ -85,13 +86,16 @@ buildmodel <- function(corpus, highest_order=2, cores=1){
         start_t <- Sys.time()
 
         # parallelized AF
-        ngrams <-extractNGrams(sample_corpus, stopWords = T, ng=order+1, cores=cores)
+        ngrams <-extractNGrams(corpus, stopWords = T, ng=order+1, cores=cores)
 
         delta_t <- Sys.time() - start_t
-        print(paste0(order,"-grams found in ", delta_t))
+        print(paste0(order,"-grams found in:"))
+        print(delta_t)
 
         print("building markov chain...")
         df <- data.frame(str_split_fixed(ngrams, " ", n=order+1), stringsAsFactors = F)
+
+        rm(ngrams)
 
         if(order > 1){
             map_df <- data.frame(ngram=do.call(paste, df[, 1:order]), next_word=df[, order+1], stringsAsFactors = F)
@@ -102,7 +106,8 @@ buildmodel <- function(corpus, highest_order=2, cores=1){
         start_t <- Sys.time()
         g <- graph.data.frame(map_df, directed=T)
         delta_t <- Sys.time() - start_t
-        print(paste0("markov chain built in ", delta_t))
+        print(paste0("markov chain built in:"))
+        print(delta_t)
 
         chains[[order]] <- g
         ngram_counts[[order]] <- table(map_df$ngram)
