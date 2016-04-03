@@ -20,7 +20,6 @@ pword <- function(model, word, string){
 
     for(order in seq(model$order, 1, -1)) {
         phrase = strtail(string, order)
-        mchain = model$model[[order]]
 
         result <- tryCatch({
             print(phrase)
@@ -64,7 +63,31 @@ nextword <- function(model, string){
     #   markov chain in the model.
     #
     # returns a word
-    return(0)
+
+    beta = 1 # penalty for dropping down to lower orders
+
+    rankings <- data.frame(word=c(), p=c())
+
+    for(order in seq(model$order, 1, -1)) {
+        phrase = strtail(string, order)
+
+        result <- tryCatch({
+            print(phrase)
+            ngram_node <- model$model[[order]][phrase]
+        }, error = function(e){
+            # we need to backoff here. n-th order ngram returned nothing so move down to (n-1 gram)
+            NULL
+        })
+
+        if(!is.null(result)){
+            word_dist <- beta * (result / sum(result))
+            df <- data.frame(word=names(word_dist), p=unname(word_dist))
+            rankings <- rbind(rankings, df)
+        }
+
+        beta = beta * beta
+    }
+    return(rankings)
 }
 
 
