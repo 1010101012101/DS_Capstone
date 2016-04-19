@@ -8,7 +8,7 @@ library(tidyr)
 library(stringr)
 source("utils.R")
 
-pword <- function(model, word, string){
+pword <- function(model, string, word){
     # return the probability of the given word and words leading up to it.
     #
     # model  -- the model object returned by build
@@ -23,16 +23,15 @@ pword <- function(model, word, string){
 
         result <- tryCatch({
             print(phrase)
-            ngram_node <- model$model[[order]][phrase]
+            ngram_node <- model$model[[order]][phrase, ]
             if(is.na(ngram_node[word]) || ngram_node[word] == 0){
                 ngram_node = NULL
             }
-
+            ngram_node
         }, error = function(e){
             # we need to backoff here. n-th order ngram returned nothing so move down to (n-1 gram)
             NULL
         })
-
 
         if(!is.null(result)) {
             # occurences of word given the phrase
@@ -55,7 +54,7 @@ pword <- function(model, word, string){
 }
 
 
-nextword <- function(model, string){
+allnextwords <- function(model, string){
     # return the word with the highest MLE given the input model and string
     #
     # model  -- the model object returned by build
@@ -64,7 +63,7 @@ nextword <- function(model, string){
     #
     # returns a word
 
-    beta = 1 # penalty for dropping down to lower orders
+    beta = .25 # penalty for dropping down to lower orders
 
     rankings <- data.frame(word=c(), p=c())
 
@@ -73,25 +72,26 @@ nextword <- function(model, string){
 
         result <- tryCatch({
             print(phrase)
-            ngram_node <- model$model[[order]][phrase]
+            ngram_node <- model$model[[order]][phrase, ]
         }, error = function(e){
             # we need to backoff here. n-th order ngram returned nothing so move down to (n-1 gram)
             NULL
         })
 
         if(!is.null(result)){
-            word_dist <- beta * (result / sum(result))
+            flags = result > 0
+            word_dist <- beta * (result[flags] / sum(result[flags]))
             df <- data.frame(word=names(word_dist), p=unname(word_dist))
             rankings <- rbind(rankings, df)
         }
 
         beta = beta * beta
     }
-    return(rankings)
+    return(rankings %>% arrange(desc(p)))
 }
 
 
-allnextwords <- function(model, string){
+nextwords <- function(model, string){
     # return all words with a non-zero probability of appearing after the given string
     return
 }
@@ -126,19 +126,24 @@ buildmodel <- function(corpus, highest_order=2, cores=1){
             map_df <- df %>% rename(ngram=X1, nextword=X2)
         }
 
+        # ngram_counts[[order]] <- table(map_df$ngram)
+        # get rid of ngrams that only show up once. these aren't that useful and are probably mispellings
+        map_df <- map_df[duplicated(map_df$ngram) | duplicated(map_df$ngram, fromLast = T),]
+
         start_t <- Sys.time()
         g <- graph.data.frame(map_df, directed=T)
         delta_t <- Sys.time() - start_t
         print(paste0("markov chain built in:"))
         print(delta_t)
 
-        chains[[order]] <- g
-        ngram_counts[[order]] <- table(map_df$ngram)
+        chains[[order]] <- as_adjacency_matrix(g)
+
 
         print("--------------------------------------")
     }
 
-    result = list(model=chains, ngram_freq=ngram_counts, corpus=corpus, order=highest_order)
+    # result = list(model=chains, ngram_freq=ngram_counts, corpus=corpus, order=highest_order)
+    result = list(model=chains, corpus=corpus, order=highest_order)
     return(result)
 }
 
