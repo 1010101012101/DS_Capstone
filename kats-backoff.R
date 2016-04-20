@@ -55,9 +55,31 @@ pword <- function(model, string, word){
 
 parallel_nextwords <- function(model, string, cores=1){
     # parallelized version of allnextwords
-    beta = .25
-    
-    
+
+    results <- parallel::mcmapply(function(model, string, order){
+        beta = .25
+
+        rankings <- data.frame(word=c(), p=c())
+        phrase = strtail(string, order)
+
+        result <- tryCatch({
+            ngram_node <- model$model[[order]][phrase, ]
+        }, error = function(e){
+            # we need to backoff here. n-th order ngram returned nothing so move down to (n-1 gram)
+            NULL
+        })
+
+        if(!is.null(result)){
+            flags = result > 0
+            word_dist <- beta^(model$highest_order - order) * (result[flags] / sum(result[flags]))
+            df <- data.frame(word=names(word_dist), p=unname(word_dist))
+            rankings <- rbind(rankings, df)
+        }
+        return(rankings)
+
+    }, model, string, 1:model$highest_order, mc_cores=cores, simplify=T)
+
+    return(results)
 }
 
 
