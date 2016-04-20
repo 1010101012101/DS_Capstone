@@ -55,31 +55,31 @@ pword <- function(model, string, word){
 
 parallel_nextwords <- function(model, string, cores=1){
     # parallelized version of allnextwords
-
-    results <- parallel::mcmapply(function(model, string, order){
-        beta = .25
-
-        rankings <- data.frame(word=c(), p=c())
+    
+    predictions <- parallel::mcmapply(function(order){
         phrase = strtail(string, order)
-
+        beta = .05
+        rankings <- data.frame(word=c("null"), p=c(-1))
+        # ngram_node <- model$model[[order]][phrase, ]
         result <- tryCatch({
             ngram_node <- model$model[[order]][phrase, ]
         }, error = function(e){
             # we need to backoff here. n-th order ngram returned nothing so move down to (n-1 gram)
             NULL
         })
-
         if(!is.null(result)){
             flags = result > 0
-            word_dist <- beta^(model$highest_order - order) * (result[flags] / sum(result[flags]))
+            word_dist <- beta^(model$order - order) * (result[flags] / sum(result[flags]))
             df <- data.frame(word=names(word_dist), p=unname(word_dist))
             rankings <- rbind(rankings, df)
         }
         return(rankings)
 
-    }, model, string, 1:model$highest_order, mc_cores=cores, simplify=T)
-
-    return(results)
+    }, 1:model$order, mc.cores=cores)
+    
+    # combine all the returned dataframes into a single dataframe sorted by probability
+    # descending
+    do.call(rbind, apply(predictions, MARGIN=2, FUN=data.frame)) %>% arrange(desc(p))
 }
 
 
@@ -92,9 +92,9 @@ allnextwords <- function(model, string){
     #
     # returns a word
 
-    beta = .25 # penalty for dropping down to lower orders
+    beta = .01 # penalty for dropping down to lower orders
 
-    rankings <- data.frame(word=c(), p=c())
+    rankings <- data.frame(word=c(), p=c(), w=c())
 
     for(order in seq(model$order, 1, -1)) {
         phrase = strtail(string, order)
@@ -109,14 +109,19 @@ allnextwords <- function(model, string){
 
         if(!is.null(result)){
             flags = result > 0
-            word_dist <- beta * (result[flags] / sum(result[flags]))
-            df <- data.frame(word=names(word_dist), p=unname(word_dist))
-            rankings <- rbind(rankings, df)
+            
+            word_dist <- beta * (result[flags] / sum(result[flags])) 
+            df <- data.frame(word=names(word_dist), p=unname(word_dist), w=0)
+            rankings <- rbind(rankings, df) %>% head(20)
+            
+            weights <- apply(model$model[[order]][, rankings$word], FUN=sum, MARGIN=2)
+            rankings <- rankings %>% mutate(w= p * unname(sum(weights) / weights))
+            
         }
 
         beta = beta * beta
     }
-    return(rankings %>% arrange(desc(p)))
+    predictions <- rankings %>% arrange(desc(w)) %>% head(100)
 }
 
 
