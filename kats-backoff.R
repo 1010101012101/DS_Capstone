@@ -53,6 +53,13 @@ pword <- function(model, string, word){
     return(-1)
 }
 
+parallel_nextwords <- function(model, string, cores=1){
+    # parallelized version of allnextwords
+    beta = .25
+    
+    
+}
+
 
 allnextwords <- function(model, string){
     # return the word with the highest MLE given the input model and string
