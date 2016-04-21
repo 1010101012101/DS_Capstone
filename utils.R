@@ -1,9 +1,9 @@
 require(tm)
 require(ngram)
 require(NLP)
-require(ggplot2)
 require(dplyr)
 require(tidyr)
+require(caret)
 
 strtail <- function(string, n){
     # return the last n words of a string as a string
@@ -11,36 +11,66 @@ strtail <- function(string, n){
     return(paste(tail(words, n), collapse = " "))
 }
 
-## define some useful functions
-loadRawCorpus <- function(path, n, random=T, seed=NA){
-    # if random = False then just select the first n files
+strhead <- function(string, n){
+    # return the first n words of a string as a string
+    words <- strsplit(string, " ")[[1]]
+    return(paste(head(words, n), collapse = " "))
+}
 
+createDataSets <- function(path, p_training=.7, seed=12345){
+    # split the text files contained in path into a training and test file list. p defines the
+    # proportion of filenames that are assigned to training. returns a named list with two names:
+    # training and testing. both map to vectors
+    #
     path = file.path(path)
     source <- DirSource(path)
-    source$length <- n
-    if(random){
-        if(!is.na(seed)) {
-            set.seed(seed)
-        }
-        source$filelist <- sample(source$filelist, n)
-    }
-    else {
-        source$filelist <- source$filelist[1:n]
-    }
+
+    set.seed(seed)
+    trainIndex <- createDataPartition(1:length(source$filelist), p = p_training, list = F, times = 1)
+
+    list(training=source$filelist[trainIndex], testing=source$filelist[-trainIndex])
+}
+
+createCVSets <- function(filelist, folds = 10) {
+    # takes a DirSource object and returns a vector of cv groupings, 1:10. the groups are used to
+    # partition the filelist in the dirsource
+    createFolds(filelist, k = folds, list=F)
+}
+
+createCorpus <- function(filelist){
+    # takes a DirSource object and creates a Corpus object out of them
+    #
+    source <- DirSource(".")
+    source$filelist <- filelist
+    source$length <- length(filelist)
     corpus <- Corpus(source)
     return(corpus)
 }
 
-sanitizeCorpus <- function(corpus, keepPunctuation=F, keepStopWords=F) {
-    if(!keepPunctuation){
-        corpus <- tm_map(corpus, removePunctuation)
+sanitizeString <- function(s, keepPunctuation=F, keepStopWords=T) {
+    s <- tolower(s)
+    s <- stripWhitespace(s)
+    s <- trimws(s)
+    if(!keepStopWords){
+        s <- removeWords(s, stopwords("english"))
     }
+    if(!keepPunctuation){
+        s <- removePunctuation(s, preserve_intra_word_dashes = T)
+    }
+    s <- removeNumbers(s)
+    return(s)
+}
+
+sanitizeCorpus <- function(corpus, keepPunctuation=F, keepStopWords=F) {
+    corpus <- tm_map(corpus, tolower)
+    corpus <- tm_map(corpus, stripWhitespace)
     if(!keepStopWords){
         corpus <- tm_map(corpus, removeWords, stopwords("english"))
     }
+    if(!keepPunctuation){
+        corpus <- tm_map(corpus, removePunctuation, preserve_intra_word_dashes=T)
+    }
     corpus <- tm_map(corpus, removeNumbers)
-    corpus <- tm_map(corpus, tolower)
-    corpus <- tm_map(corpus, stripWhitespace)
     corpus <- tm_map(corpus, PlainTextDocument)
     return(corpus)
 }
