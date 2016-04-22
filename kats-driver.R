@@ -1,39 +1,44 @@
 source("kats-backoff.R")
 
-datasets <- createDataSets("data/en_US/all-data/", p_training = .02, seed = 12345)
+datasets <- createDataSets("data/en_US/all-data/", p_training = .12, seed = 12345)
 cv_idx <- createCVSets(datasets$training)
-for(i in 1:1){
+for(i in 1:10){
     cv_training <- datasets$training[cv_idx != i]
     cv_testing <- datasets$training[cv_idx == i]
-    cv_model <-buildmodel(createCorpus(cv_training), highest_order = 3, cores = 2)
+    cv_model <-buildmodel(createCorpus(cv_training), highest_order = 3, cores = 15)
 
     # load a text file and test the model
-    fin <- open(cv_testing[1], "r")
-    lines <- sample(readLines(fin), replace = F, size = 100)
+    fin <- file(cv_testing[1], "r")
+    lines <- sample(readLines(fin), replace = F, size = 200)
     close(fin)
 
+    correct = 0
     for(line in lines){
         line <- sanitizeString(line)
         phrase <- strhead(line, 5)
         x <- strhead(phrase, 4)
         y <- strtail(phrase, 1)
 
-        prediction <- parallel_nextwords(cv_model, x, cores=2)[1, "word"]
-        print(paste("actual:", y, ", predicted:", prediction))
+        prediction <- parallel_nextwords(cv_model, x, cores = 15)[1, "word"]
+        if(trimws(y) == trimws(prediction)){
+            correct = correct + 1  
+        }
+        # print(phrase)
+        # print(paste("actual:", y, ", predicted:", prediction))
     }
+    print(paste("fold =", i, "--", correct / 200))
 }
 
 
+datasets <- createDataSets("data/en_US/all-data/", p_training = .15, seed = 12345)
+print(length(datasets$training))
 training_corpus <- createCorpus(datasets$training)
-
-# load a single text file to act as the test set
-test_filepath <- datasets$testing[[1]]
-
-model <- buildmodel(training_corpus, highest_order = 3, cores = 3)
+comp_katzmodel_500_3 <- buildmodel(training_corpus, highest_order = 3, cores = 15)
 
 
+
+# model <- buildmodel(training_corpus, highest_order = 3, cores = 3)
 # save(comp_katzmodel_2000_3, file="comp_katzmodel_2000_3.cha")
-
 # load("comp_katzmodel_2000.cha")
 
 start_t <- Sys.time()
