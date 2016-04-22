@@ -1,0 +1,24 @@
+405 docs in training set
+10-fold cross validation
+    364 docs used per fold
+
+    CV classification accuracy:
+    .15 + .14 + .14 + .16 + .155 + .12 + .205 + .16 + .155 + .135
+    avg accuracy: 15.2%
+
+hardware:
+c4.4xlarge
+~ 30minutes per fold, 22GB ram used
+
+
+
+
+
+
+
+
+
+
+[!\"#$%&()*+,\-./:;<=>?@[\\\]^_`{|}~]
+
+gsub("[^[:alnum:][:space:]']", "", x)
