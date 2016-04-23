@@ -1,20 +1,22 @@
 source("kats-backoff.R")
 
-datasets <- createDataSets("data/en_US/all-data/", p_training = .12, seed = 12345)
-cv_idx <- createCVSets(datasets$training)
-for(i in 1:10){
+datasets <- createDataSets("data/en_US/all-data/", p_training = .15, seed = 12345)
+cv_idx <- createCVSets(datasets$training, folds=30)
+cv_results = rep(0, 30)
+
+for(i in 1:30){
     cv_training <- datasets$training[cv_idx != i]
     cv_testing <- datasets$training[cv_idx == i]
     cv_model <-buildmodel(createCorpus(cv_training), highest_order = 3, cores = 15)
 
     # load a text file and test the model
     fin <- file(cv_testing[1], "r")
-    lines <- sample(readLines(fin), replace = F, size = 200)
+    lines <- sample(readLines(fin), replace = F, size = 500)
     close(fin)
 
     correct = 0
     for(line in lines){
-        line <- sanitizeString(line)
+        line <- sanitizeString(line, keepPunctuation = F, keepStopWords = T)
         phrase <- strhead(line, 5)
         x <- strhead(phrase, 4)
         y <- strtail(phrase, 1)
@@ -26,8 +28,12 @@ for(i in 1:10){
         # print(phrase)
         # print(paste("actual:", y, ", predicted:", prediction))
     }
-    print(paste("fold =", i, "--", correct / 200))
+    print(paste("fold =", i, "--", correct / 500))
+    cv_results[i] = correct / 500
 }
+
+
+
 
 
 datasets <- createDataSets("data/en_US/all-data/", p_training = .15, seed = 12345)
