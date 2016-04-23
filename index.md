@@ -12,7 +12,7 @@ knit        : slidify::knit2slides
 ---
 
 ## Introduction
-
+This is a test commit message.
 
 --- .class #id 
 
