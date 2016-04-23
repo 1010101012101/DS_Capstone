@@ -63,7 +63,7 @@ footprint also improves model speed.
 
 --- 
 
-## Resultshttps://rpubs.com/chavli/ds-capstonehttps://rpubs.com/chavli/ds-capstone
+## Results
 ![](images/shiny_app.png)
 
 Check out the [Shiny App](http://ec2-54-183-164-123.us-west-1.compute.amazonaws.com/text-prediction/)
