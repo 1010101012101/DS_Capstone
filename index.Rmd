@@ -27,28 +27,6 @@ In this project, I created a simple n-gram model and wrapped it in a RShiny [app
 
 --- .class #id 
 
-
-##  Datasets and Preprocessing
-The text dataset used for this project included large amounts of data taken from news stories, blog
-posts, and Twitter. An exploratory analysis of the datasets can be found [here](http://rpubs.com/chavli/ds-capstone).
-
-Text is a messy representation of a alrady chaot1c thing c4lled NachiRal lanGwicH. 
-
-### Preprocessing
-
-1. split the data into 1000 line files for easier sampling
-2. normalized everything to lower-case 
-3. removed symbols and punctuation, except apostrophes 
-4. removed redundant whitespace
-5. handle misspellings / typos
-
-I decided to keep stopwords (words with little contextual meaning) since they have a bigger role in 
-text prediction than in topic modelling. Stopwords are valid predictions!
-
-[SwiftKey](https://swiftkey.com/en) and [Coursera](www.coursera.com) provided the datasets.
-
---- 
-
 ## Algorithms and Models
 The five components of my approach to this project were
 
@@ -85,7 +63,7 @@ footprint also improves model speed.
 
 --- 
 
-## Results
+## Resultshttps://rpubs.com/chavli/ds-capstonehttps://rpubs.com/chavli/ds-capstone
 ![](images/shiny_app.png)
 
 Check out the [Shiny App](http://ec2-54-183-164-123.us-west-1.compute.amazonaws.com/text-prediction/)
