@@ -25,10 +25,11 @@ shinyUI(fluidPage(
     ),
     fluidRow(
         column(3, offset = 4,
-            textInput("iPhrase", label=NULL, value = "type here...", width = "100%", placeholder = NULL)
+            textInput("phrase", label=NULL, value = "type here...", width = "100%", placeholder = NULL)
         ),
         column(1, offset = 0,
-            submitButton(text = "Predict!", icon = NULL, width = "100%")
+            actionButton("submitButton", "Predict!", icon = NULL, width = "100%",
+                style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
         )  
     ),
     fluidRow(
