@@ -54,7 +54,7 @@ The five components of my approach to this project were
 
 1. basic NLP to parse out words and sentences
 2. uni-gram, bi-gram, and tri-gram frequencies and relationships
-3. [katz-backoff model](https://en.wikipedia.org/wiki/Katz%27s_back-off_model) with [smoothing](http://nlp.stanford.edu/~wcmac/papers/20050421-smoothing-tutorial.pdf) + [pruning](https://pdfs.semanticscholar.org/2905/3eab305c2b585bcfbb713243b05646e7d62d.pdf)
+3. [katz-backoff model](https://en.wikipedia.org/wiki/Katz%27s_back-off_model) with [smoothing](http://nlp.stanford.edu/~wcmac/papers/20050421-smoothing-tutorial.pdf) and [pruning](https://pdfs.semanticscholar.org/2905/3eab305c2b585bcfbb713243b05646e7d62d.pdf)
 4. [graphical models](https://en.wikipedia.org/wiki/Graphical_model) and [markov chains](https://en.wikipedia.org/wiki/Markov_chain) 
 5. model optimization and evaluation
 
@@ -85,12 +85,13 @@ footprint also improves model speed.
 
 --- 
 
-## Results
+## The Shiny App
 The vast majority of my modelling work: analysis, training, and testing was done using RStudio Server
 hosted on [EC2](https://aws.amazon.com/ec2/instance-types/#compute-optimized).
 
-insert some graphs here
+[Shiny App](www.google.com)
 
-### The Shiny App
-You can play around with my final text-prediction model using my RShiny app found [here](www.google.com). 
-It's hosted on an EC2 instance rather than shinyapps.io because I'm not paying $40 / month for 2GB of RAM.
+![](images/shiny_app.png =100x100)
+
+It's hosted on an EC2 instance rather than [shinyapps.io](http://www.shinyapps.io/) because I'm 
+not paying $40 / month for 2GB of RAM.
