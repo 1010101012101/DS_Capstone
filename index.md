@@ -1,5 +1,5 @@
 ---
-title       : P("Prediction" | "Text") = 1
+title       : Text Prediction 
 subtitle    : Data Science Capstone Project
 author      : Cha Li
 job         : 
