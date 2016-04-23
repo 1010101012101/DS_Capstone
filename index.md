@@ -11,8 +11,19 @@ mode        : selfcontained # {standalone, draft}
 knit        : slidify::knit2slides
 ---
 
-## Introduction
-This is a test commit message.
+## Why Text Prediction?
+Text prediction is a broad topic that focusses on anticipating upcoming words, phrases, and themes
+based on previous inputs. One practical application of this is auto-completion, seen in search boxes
+and text messages.
+
+but looking beyond auto-completion there are many other applications:
+* blog post generation
+* news articles
+* [academic publications](https://pdos.csail.mit.edu/archive/scigen/)
+* [clickbait](https://en.wikipedia.org/wiki/Clickbait) [titles](http://community.usvsth3m.com/generator/clickbait-headline-generator)
+* speech generation for [virtual assistant](http://www.nytimes.com/2016/01/28/technology/personaltech/siri-alexa-and-other-virtual-assistants-put-to-the-test.html) interfaces
+
+In this project, I created a simple auto-completion model and wrapped it in a RShiny [application](www.google.com)
 
 --- .class #id 
 

@@ -1,3 +1,5 @@
+# reference
+# http://ramnathv.github.io/slidify/start.html
 library(slidify)
 library(slidifyLibraries)
 slidify("index.Rmd")
