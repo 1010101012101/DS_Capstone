@@ -1,5 +1,5 @@
 ---
-title       : Text Prediction 
+title       : Text Prediction -- Auto-Complete
 subtitle    : Data Science Capstone Project
 author      : Cha Li
 job         : 
