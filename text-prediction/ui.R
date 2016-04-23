@@ -17,6 +17,8 @@ shinyUI(fluidPage(
             div(
                 a("LinkedIn", href="https://www.linkedin.com/in/chavli"),
                 "---",
+                a("Exploratory Report", href="https://rpubs.com/chavli/ds-capstone"),
+                "---",
                 a("Github Repo", href="https://github.com/chavli/DS_Capstone"),
                 "---", 
                 a("Slidify Presentation", href="http://chavli.github.io/DS_Capstone/#1")

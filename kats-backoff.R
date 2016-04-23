@@ -1,5 +1,5 @@
-source("requirements.R")
-source("utils.R")
+source("/home/ubuntu/ds-capstone/requirements.R")
+source("/home/ubuntu/ds-capstone/utils.R")
 
 pword <- function(model, string, word){
     # return the probability of the given word and words leading up to it.

@@ -6,19 +6,17 @@
 #
 #    http://shiny.rstudio.com/
 #
-setwd("~/Coursera/capstone-code/") # remove when deploying
-
 library(shiny)
 library(ggplot2)
 library(dplyr)
 library(RColorBrewer)
-source("kats-backoff.R")
+source("/home/ubuntu/ds-capstone/kats-backoff.R")
 
+
+load("/home/ubuntu/ds-capstone/models/comp_katzmodel_2000_3.cha")
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-    load("models/comp_katzmodel_500_2.cha")
-    
     output$oCoreCount <- renderText({
         ncores = max(parallel::detectCores() - 1, 1)
         paste("Available CPU Cores:", ncores)
@@ -28,12 +26,12 @@ shinyServer(function(input, output) {
         phrase = input$phrase
         
         start_t = Sys.time()
-        predictions = parallel_nextwords(comp_katzmodel_500_2, string = phrase,
+        predictions = parallel_nextwords(comp_katzmodel_2000_3, string = phrase,
                                          cores = max(parallel::detectCores() - 1, 1))
-        predictions = predictions %>% 
+        predictions = predictions %>% head(1000) %>% 
             mutate(word=trimws(word)) %>% 
-            group_by(word) %>% 
-            summarise(p=max(p)) %>% 
+            # group_by(word) %>% 
+            # summarise(p=max(p)) %>% 
             arrange(desc(p)) %>% head(10)
         
         predictions = transform(predictions, word = reorder(word, p))
