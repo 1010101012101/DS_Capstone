@@ -1,0 +1,42 @@
+# all the required libraries for this project
+
+if(!require(tm)){ 
+    install.packages("tm") 
+    library(tm)
+}
+if(!require(ngram)){
+    install.packages("ngram") 
+    library(ngram)
+}
+if(!require(markovchain)){ 
+    install.packages("markovchain") 
+    library(markovchain)    
+}
+if(!require(igraph)){ 
+    install.packages("igraph") 
+    library(igraph)
+}
+if(!require(ggplot2)){ 
+    install.packages("ggplot2") 
+    library(ggplot2)
+}
+if(!require(dplyr)){ 
+    install.packages("dplyr") 
+    library(dplyr)
+}
+if(!require(tidyr)){ 
+    install.packages("tidyr") 
+    library("tidyr")
+}
+if(!require(stringr)){ 
+    install.packages("stringr") 
+    library(stringr)
+}
+if(!require(caret)){ 
+    install.packages("caret") 
+    library(caret)
+}
+if(!require(NLP)){ 
+    install.packages("NLP") 
+    library(NLP)
+}

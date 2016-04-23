@@ -1,10 +1,3 @@
-require(tm)
-require(ngram)
-require(NLP)
-require(dplyr)
-require(tidyr)
-require(caret)
-
 strtail <- function(string, n){
     # return the last n words of a string as a string
     words <- strsplit(string, " ")[[1]]

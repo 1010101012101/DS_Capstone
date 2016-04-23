@@ -1,11 +1,4 @@
-library(tm)
-library(ngram)
-library(markovchain)
-library(igraph)
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-library(stringr)
+source("requirements.R")
 source("utils.R")
 
 pword <- function(model, string, word){
