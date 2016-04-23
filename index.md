@@ -85,13 +85,14 @@ footprint also improves model speed.
 
 --- 
 
-## The Shiny App
-The vast majority of my modelling work: analysis, training, and testing was done using RStudio Server
-hosted on [EC2](https://aws.amazon.com/ec2/instance-types/#compute-optimized).
+## Results
+![](images/shiny_app.png)
 
-[Shiny App](www.google.com)
+Check out the [Shiny App](http://ec2-54-183-164-123.us-west-1.compute.amazonaws.com/text-prediction/)
 
-![](images/shiny_app.png =100x100)
+Just type a phrase into the text box and click predict! You'll get back a prediction as well as a
+graph showing the top 10 predictions.
 
-It's hosted on an EC2 instance rather than [shinyapps.io](http://www.shinyapps.io/) because I'm 
-not paying $40 / month for 2GB of RAM.
+The app is hosted on EC2 rather than [shinyapps.io](http://www.shinyapps.io/) because I wanted
+better hardware at a cheaper price.
+
