@@ -40,7 +40,7 @@ createCorpus <- function(filelist){
     return(corpus)
 }
 
-sanitizeString <- function(s, keepPunctuation=F, keepStopWords=T) {
+sanitizeString <- function(s, keepPunctuation=F, keepStopWords=F) {
     s <- tolower(s)
     s <- stripWhitespace(s)
     s <- trimws(s)
@@ -78,9 +78,9 @@ globalTermFrequency <- function(corpus){
 }
 
 
-extractNGrams <- function(raw_corpus, ng=2, stopWords=F, cores=2){
+extractNGrams <- function(raw_corpus, ng=2, punctuation=F, stopWords=F, cores=2){
     print(paste("using cores: ", cores))
-    corpus <- sanitizeCorpus(raw_corpus, keepPunctuation = T, keepStopWords = stopWords)
+    corpus <- sanitizeCorpus(raw_corpus, keepPunctuation = punctuation, keepStopWords = stopWords)
 
     corpus_ngrams <- parallel::mclapply(corpus, function(document){
         sent_token_annotator <- openNLP::Maxent_Sent_Token_Annotator()

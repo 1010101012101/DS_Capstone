@@ -136,7 +136,7 @@ buildmodel <- function(corpus, highest_order=2, cores=1){
         start_t <- Sys.time()
 
         # parallelized AF
-        ngrams <-extractNGrams(corpus, stopWords = T, ng=order+1, cores=cores)
+        ngrams <-extractNGrams(corpus, punctuation = F, stopWords = T, ng=order+1, cores=cores)
 
         delta_t <- Sys.time() - start_t
         print(paste0(order,"-grams found in:"))
