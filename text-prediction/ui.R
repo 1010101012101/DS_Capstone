@@ -33,6 +33,9 @@ shinyUI(fluidPage(
         )  
     ),
     fluidRow(
+        column(4, offset = 4, align="center", textOutput("oCoreCount"), style="color: red;")
+    ),
+    fluidRow(
         column(4, offset = 4, align="center", h3(textOutput("oPrediction")))
     ),
     fluidRow(
