@@ -1,0 +1,19 @@
+
+pulling files from EC2 to somewhere
+
+general command:
+scp -i /path/to/pem /source/folder /destination/folder
+
+scp -i ~/chavli-dev2.pem\
+    ubuntu@ec2-52-53-191-117.us-west-1.compute.amazonaws.com:/home/rstudio/ds-capstone/models/comp_katzmodel_500_2.cha\
+    .
+
+pushing fies to EC2 from somewhere
+scp -i ~/chavli-dev2.pem\
+    .\
+    ubuntu@ec2-52-53-191-117.us-west-1.compute.amazonaws.com:/home/rstudio/ds-capstone/models/comp_katzmodel_500_2.cha
+
+
+
+references:
+http://stackoverflow.com/questions/11388014/using-scp-to-copy-a-file-to-amazon-ec2-instance

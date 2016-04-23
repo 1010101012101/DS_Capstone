@@ -148,9 +148,9 @@ buildmodel <- function(corpus, highest_order=2, cores=1){
         rm(ngrams)
 
         if(order > 1){
-            map_df <- data.frame(ngram=do.call(paste, df[, 1:order]), next_word=df[, order+1], stringsAsFactors = F)
+            map_df <- data.frame(ngram=do.call(paste, df[, 1:order]), next_word=trimws(df[, order+1]), stringsAsFactors = F)
         } else {
-            map_df <- df %>% rename(ngram=X1, nextword=X2)
+            map_df <- df %>% rename(ngram=X1, nextword=trimws(X2))
         }
 
         # ngram_counts[[order]] <- table(map_df$ngram)

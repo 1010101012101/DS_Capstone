@@ -15,6 +15,8 @@ shinyUI(fluidPage(
             titlePanel("Auto-Completion Demo"),
             div("Coursera Data Science Capstone Project"),
             div(
+                a("LinkedIn", href="https://www.linkedin.com/in/chavli"),
+                "---",
                 a("Github Repo", href="https://github.com/chavli/DS_Capstone"),
                 "---", 
                 a("Slidify Presentation", href="http://chavli.github.io/DS_Capstone/#1")
@@ -29,7 +31,7 @@ shinyUI(fluidPage(
         ),
         column(1, offset = 0,
             actionButton("submitButton", "Predict!", icon = NULL, width = "100%",
-                style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                style="color: #fff; background-color: #3a7bd5; border-color: #2e6da4")
         )  
     ),
     fluidRow(
