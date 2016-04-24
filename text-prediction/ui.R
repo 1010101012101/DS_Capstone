@@ -21,7 +21,7 @@ shinyUI(fluidPage(
                 "---",
                 a("Github Repo", href="https://github.com/chavli/DS_Capstone"),
                 "---", 
-                a("Slidify Presentation", href="http://chavli.github.io/DS_Capstone/#1")
+                a("RPubs Presentation", href="http://rpubs.com/chavli/ds-capstone-final")
             ),
             br(),
             br()

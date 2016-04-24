@@ -40,6 +40,21 @@ createCorpus <- function(filelist){
     return(corpus)
 }
 
+removeMostPunctuation <- function (x, preserve_intra_word_dashes = FALSE) {
+    rmpunct <- function(x) {
+        x <- gsub("'", "\002", x)
+        x <- gsub("[[:punct:]]+", "", x)
+        gsub("\002", "'", x, fixed = TRUE)
+    }
+    if (preserve_intra_word_dashes) { 
+        x <- gsub("(\\w)-(\\w)", "\\1\001\\2", x)
+        x <- rmpunct(x)
+        gsub("\001", "-", x, fixed = TRUE)
+    } else {
+        rmpunct(x)
+    }
+}
+
 sanitizeString <- function(s, keepPunctuation=F, keepStopWords=F) {
     s <- tolower(s)
     s <- stripWhitespace(s)
@@ -48,22 +63,26 @@ sanitizeString <- function(s, keepPunctuation=F, keepStopWords=F) {
         s <- removeWords(s, stopwords("english"))
     }
     if(!keepPunctuation){
-        s <- removePunctuation(s, preserve_intra_word_dashes = T)
+        s <- removeMostPunctuation(s, preserve_intra_word_dashes = T)
     }
     s <- removeNumbers(s)
     return(s)
 }
 
 sanitizeCorpus <- function(corpus, keepPunctuation=F, keepStopWords=F) {
+    corpus <- tm_map(corpus, PlainTextDocument)
     corpus <- tm_map(corpus, tolower)
     corpus <- tm_map(corpus, stripWhitespace)
     if(!keepStopWords){
         corpus <- tm_map(corpus, removeWords, stopwords("english"))
     }
     if(!keepPunctuation){
-        corpus <- tm_map(corpus, removePunctuation, preserve_intra_word_dashes=T)
+        # corpus <- tm_map(corpus, removePunctuation, preserve_intra_word_dashes=T)
+        corpus <- tm_map(corpus, removeMostPunctuation, preserve_intra_word_dashes=T)
+        corpus <- tm_map(corpus, PlainTextDocument)
     }
     corpus <- tm_map(corpus, removeNumbers)
+    corpus <- tm_map(corpus, stripWhitespace)
     corpus <- tm_map(corpus, PlainTextDocument)
     return(corpus)
 }

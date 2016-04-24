@@ -12,13 +12,8 @@ c4.4xlarge
 
 
 
-
-
-
-
-
-
-
-[!\"#$%&()*+,\-./:;<=>?@[\\\]^_`{|}~]
-
-gsub("[^[:alnum:][:space:]']", "", x)
+506 docs in training set
+30 fold cross validation
+    488 docs per fold
+    [.16, .152, .162, .162, .184, .152, .122, .142, .136, .136, .164, .152, .148, .158]
+    15.2% accuracy

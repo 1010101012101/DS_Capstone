@@ -51,7 +51,7 @@ parallel_nextwords <- function(model, string, cores=1){
     
     predictions <- parallel::mcmapply(function(order){
         phrase = strtail(string, order)
-        beta = .05
+        beta = .005
         rankings <- data.frame(word=c("null"), p=c(-1))
         # ngram_node <- model$model[[order]][phrase, ]
         result <- tryCatch({

@@ -17,3 +17,10 @@ scp -i ~/chavli-dev2.pem\
 
 references:
 http://stackoverflow.com/questions/11388014/using-scp-to-copy-a-file-to-amazon-ec2-instance
+
+
+
+
+ds-capstone-final
+
+.16, .152, .162, .162, .184, .152, .122, .142, .136, .136, .164, .152, .148, .158

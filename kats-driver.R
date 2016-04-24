@@ -36,9 +36,11 @@ for(i in 1:30){
 
 
 
-datasets <- createDataSets("data/en_US/all-data/", p_training = .15, seed = 12345)
+datasets <- createDataSets("data/en_US/all-data/", p_training = .001, seed = 12345)
 print(length(datasets$training))
 training_corpus <- createCorpus(datasets$training)
+foo <- sanitizeCorpus(training_corpus, keepPunctuation = F,  keepStopWords = T)
+
 comp_katzmodel_500_3 <- buildmodel(training_corpus, highest_order = 3, cores = 15)
 
 
