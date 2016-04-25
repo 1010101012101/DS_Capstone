@@ -99,7 +99,7 @@ globalTermFrequency <- function(corpus){
 
 extractNGrams <- function(raw_corpus, ng=2, punctuation=F, stopWords=F, cores=2){
     print(paste("using cores: ", cores))
-    corpus <- sanitizeCorpus(raw_corpus, keepPunctuation = punctuation, keepStopWords = stopWords)
+    # corpus <- sanitizeCorpus(raw_corpus, keepPunctuation = punctuation, keepStopWords = stopWords)
 
     corpus_ngrams <- parallel::mclapply(corpus, function(document){
         sent_token_annotator <- openNLP::Maxent_Sent_Token_Annotator()
@@ -120,8 +120,8 @@ extractNGrams <- function(raw_corpus, ng=2, punctuation=F, stopWords=F, cores=2)
                 start <- bounds[1]
                 end <- bounds[2]
                 sub_s <- substr(line, start, end)
-                sub_s <- gsub("[[:punct:]]", "", sub_s)
                 sub_s <- trimws(sub_s)
+                sub_s <- sanitizeString(sub_s, keepPunctuation = punctuation, keepStopWords = stopWords)
                 if( length(strsplit(sub_s, "\\s+", fixed = F)[[1]]) >= ng) {
                     ng_obj <- ngram::ngram(sub_s, n=ng)
                     results <- ngram::get.ngrams(ng_obj)

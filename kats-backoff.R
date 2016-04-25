@@ -49,6 +49,8 @@ pword <- function(model, string, word){
 parallel_nextwords <- function(model, string, cores=1){
     # parallelized version of allnextwords
     
+    string = sanitizeString(string, keepPunctuation = F, keepStopWords = T)
+    
     predictions <- parallel::mcmapply(function(order){
         phrase = strtail(string, order)
         beta = .005
